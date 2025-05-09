@@ -9,3 +9,5 @@ for pnpm "@repo/typescript-config": "workspace:*"
 and run pnpm install on root level`
 
 - Added a build, dev and start script to both the projects
+
+# create a cli tool to generate boilerplate

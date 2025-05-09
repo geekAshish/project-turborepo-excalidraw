@@ -7,3 +7,5 @@
 `for npm "@repo/typescript-config": "*"
 for pnpm "@repo/typescript-config": "workspace:*"
 and run pnpm install on root level`
+
+- Added a build, dev and start script to both the projects

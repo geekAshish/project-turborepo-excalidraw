@@ -1,0 +1,1 @@
+export const JWT_SECRET = "ASHISH_KUSHWAHA_SECRET";

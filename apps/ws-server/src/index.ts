@@ -1,8 +1,23 @@
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 });
 
-wss.on("connection", function connection(ws) {
+wss.on("connection", function connection(ws, request) {
+  const url = request.url;
+  if (!url) {
+    return;
+  }
+
+  const queryParmas = new URLSearchParams(url.split("?")[1]);
+  const token = queryParmas.get("token") || "";
+  const decoded = jwt.verify(token, "secret");
+
+  if (!decoded || !(decoded as JwtPayload).userId) {
+    ws.close();
+    return;
+  }
+
   ws.on("error", console.error);
 
   ws.on("message", function message(data) {

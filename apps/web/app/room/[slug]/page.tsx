@@ -1,5 +1,5 @@
 import React from "react";
-// 1:15
+// 2:15
 const ChatRoom = ({ params }: { params: { slug: string } }) => {
   const slug = params.slug;
 

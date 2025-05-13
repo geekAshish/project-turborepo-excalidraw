@@ -30,3 +30,13 @@ and run pnpm install on root level`
 13. - Initialize a new `db` package where you write the schema of the project.
 14. - Import the db package in http layer and start putting things in the DB
 15. - Add a common package where we add the zod schema and the JWT-SECRET
+16. - Defining the schema in schema.prisma
+
+npx prisma init
+npx prisma migrate dev --name init_schema
+npx prisma generate
+
+17. Complete the HTTP Backend
+18. ws layer. room management, broadcast messages
+19. HTTP route for GET /chats?room=123
+20. Frontend

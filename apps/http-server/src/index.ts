@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { prismaClient } from "@repo/db/client";
@@ -100,5 +100,25 @@ app.post("/room", async (req: Request, res: Response) => {
     });
   }
 });
+
+app.get(
+  "/chats/:roomId",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const roomId = Number(req.params.roomid);
+    const message = await prismaClient.chat.findMany({
+      where: {
+        id: roomId,
+      },
+      orderBy: {
+        id: "desc",
+      },
+      take: 50,
+    });
+
+    res.json({
+      message,
+    });
+  }
+);
 
 app.listen(3000);

@@ -40,3 +40,7 @@ npx prisma generate
 18. - ws layer. room management, broadcast messages
 19. - HTTP route for GET /chats?room=123
 20. - Frontend
+
+part 2 : 1:32:00 ws-architecture
+state full ws server
+state management on nodejs backend

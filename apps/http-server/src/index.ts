@@ -23,17 +23,17 @@ app.post("/signup", async (req: Request, res: Response) => {
   }
 
   try {
-    await prismaClient.user.create({
+    const user = await prismaClient.user.create({
       data: {
         email: parsedData.data?.username,
-        password: parsedData.data?.password,
+        password: parsedData.data?.password, // TODO: has the password
         name: parsedData.data?.name,
       },
     });
 
     // db call
     res.json({
-      userId: 192,
+      userId: user.id,
     });
   } catch (e) {
     res.status(400).json({
@@ -41,17 +41,31 @@ app.post("/signup", async (req: Request, res: Response) => {
     });
   }
 });
-app.post("/signin", (req: Request, res: Response) => {
-  const data = SignInSchema.safeParse(req.body);
-  if (!data) {
+app.post("/signin", async (req: Request, res: Response) => {
+  const parsedData = SignInSchema.safeParse(req.body);
+  if (!parsedData) {
     res.json({
       msg: "incorrent",
     });
     return;
   }
 
-  const userId = 1;
-  const token = jwt.sign({ userId }, JWT_SECRET);
+  // TODO: compare the hashed pws here
+  const user = await prismaClient.user.findUser({
+    where: {
+      email: parsedData.data?.username,
+      password: parsedData.data?.password,
+    },
+  });
+
+  if (!user) {
+    res.status(403).json({
+      msg: "Not authorized",
+    });
+    return;
+  }
+
+  const token = jwt.sign({ userId: user?.id }, JWT_SECRET);
 
   // db call
   res.json({
@@ -59,19 +73,32 @@ app.post("/signin", (req: Request, res: Response) => {
   });
 });
 
-app.post("/room", (req: Request, res: Response) => {
-  const data = CreateRoomSchema.safeParse(req.body);
-  if (!data) {
+app.post("/room", async (req: Request, res: Response) => {
+  const parsedData = CreateRoomSchema.safeParse(req.body);
+  if (!parsedData) {
     res.json({
       msg: "incorrent",
     });
     return;
   }
 
-  // db call
-  res.json({
-    roomId: 12,
-  });
+  try {
+    const room = await prismaClient.room.create({
+      data: {
+        slug: parsedData.data?.name,
+        adminId: "User-id-after-auth",
+      },
+    });
+
+    // db call
+    res.json({
+      roomId: room.id,
+    });
+  } catch (e) {
+    res.status(400).json({
+      msg: e,
+    });
+  }
 });
 
 app.listen(3000);

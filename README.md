@@ -36,7 +36,7 @@ npx prisma init
 npx prisma migrate dev --name init_schema
 npx prisma generate
 
-17. Complete the HTTP Backend
-18. ws layer. room management, broadcast messages
-19. HTTP route for GET /chats?room=123
-20. Frontend
+17. - Complete the HTTP Backend
+18. - ws layer. room management, broadcast messages
+19. - HTTP route for GET /chats?room=123
+20. - Frontend

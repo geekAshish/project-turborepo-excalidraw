@@ -44,3 +44,10 @@ npx prisma generate
 part 2 : 1:32:00 ws-architecture
 state full ws server
 state management on nodejs backend
+
+for ui page, landing page use : bolt.new, lovable, cursor
+like : Create a landing page for my excelidraw clone. Use tailwind
+
+# tailwind setup in turborepo
+
+create a separate tailwind-config file and import it

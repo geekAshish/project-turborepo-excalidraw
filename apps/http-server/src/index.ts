@@ -25,9 +25,10 @@ app.post("/signup", async (req: Request, res: Response) => {
   try {
     const user = await prismaClient.user.create({
       data: {
-        email: parsedData.data?.username,
-        password: parsedData.data?.password, // TODO: has the password
-        name: parsedData.data?.name,
+        email: parsedData.data?.username || "",
+        password: parsedData.data?.password || "", // TODO: has the password
+        name: parsedData.data?.name || "",
+        photo: "",
       },
     });
 
@@ -51,7 +52,7 @@ app.post("/signin", async (req: Request, res: Response) => {
   }
 
   // TODO: compare the hashed pws here
-  const user = await prismaClient.user.findUser({
+  const user = await prismaClient.user.findFirst({
     where: {
       email: parsedData.data?.username,
       password: parsedData.data?.password,
@@ -85,7 +86,7 @@ app.post("/room", async (req: Request, res: Response) => {
   try {
     const room = await prismaClient.room.create({
       data: {
-        slug: parsedData.data?.name,
+        slug: parsedData.data?.name || "",
         adminId: "User-id-after-auth",
       },
     });
@@ -143,4 +144,4 @@ app.get(
   }
 );
 
-app.listen(3000);
+app.listen(3020);

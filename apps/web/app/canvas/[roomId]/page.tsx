@@ -1,7 +1,7 @@
 "use client";
+// 1:11:50
 
 import React, { useEffect, useRef } from "react";
-// 00:55
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -11,6 +11,9 @@ const Canvas = () => {
       const ctx = canvas.getContext("2d");
 
       if (!ctx) return;
+
+      ctx.fillStyle = "rgba(0, 0, 0)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       let isMouseClicked = false;
       let startX = 0;
@@ -34,6 +37,7 @@ const Canvas = () => {
           const height = e.clientY - startY;
 
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(225, 225, 225)";
           ctx.strokeRect(startX, startY, width, height);
         }
       });

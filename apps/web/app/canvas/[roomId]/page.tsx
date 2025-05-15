@@ -1,23 +1,11 @@
-"use client";
+import RoomCanvas from "../../../components/RoomCanvas";
 
-import React, { useEffect, useRef } from "react";
-import { initDraw } from "../../../draw";
-const Canvas = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const CanvasPage = async ({ params }: { params: { roomId: string } }) => {
+  const roomId = (await params).roomId;
 
-  // this logic should not be inside in component, some sort of game.ts file
-  useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+  console.log({ roomId });
 
-      if (!ctx) return;
-
-      initDraw({ ctx, canvas });
-    }
-  }, [canvasRef]);
-
-  return <canvas ref={canvasRef}></canvas>;
+  return <RoomCanvas roomId={roomId} />;
 };
 
-export default Canvas;
+export default CanvasPage;

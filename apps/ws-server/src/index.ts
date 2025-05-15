@@ -56,8 +56,14 @@ wss.on("connection", function connection(ws, request) {
   ws.on("error", console.error);
 
   // here because we know the data which coming gonna be string
-  ws.on("message", async function message(data: string) {
-    const parsedData = JSON.parse(data);
+  ws.on("message", async function message(data) {
+    let parsedData;
+
+    if (typeof data !== "string") {
+      parsedData = JSON.parse(data.toString());
+    } else {
+      parsedData = JSON.parse(data);
+    }
 
     if (parsedData.type === "join_room") {
       // TODO: check if roomid exist, in db
@@ -81,8 +87,9 @@ wss.on("connection", function connection(ws, request) {
       // NOT A GOOD WAY
       await prismaClient.chat.create({
         data: {
-          roomId,
+          roomId: Number(roomId),
           message,
+          userId,
         },
       });
 

@@ -51,3 +51,13 @@ like : Create a landing page for my excelidraw clone. Use tailwind
 # tailwind setup in turborepo
 
 create a separate tailwind-config file and import it
+
+# ###################3333333#############################
+
+# TODO
+
+1. connect to db using postgress/docker
+2. add authentication
+3. shape should have a separate schema
+4. add different type of shapes
+5. explore excalidraw

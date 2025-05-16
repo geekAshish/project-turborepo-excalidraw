@@ -70,5 +70,3 @@ create a separate tailwind-config file and import it
 9. resize canvas
 
 what is factory pattern?
-
-1:50

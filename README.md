@@ -64,9 +64,11 @@ create a separate tailwind-config file and import it
 
 --
 
-6. add different shapes button
+6. add different shapes button (pen, triangle)
 7. Zoom in / Zoom out
 8. add layer
 9. resize canvas
+
+what is factory pattern?
 
 1:50

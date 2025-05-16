@@ -61,3 +61,12 @@ create a separate tailwind-config file and import it
 3. shape should have a separate schema
 4. add different type of shapes
 5. explore excalidraw
+
+--
+
+6. add different shapes button
+7. Zoom in / Zoom out
+8. add layer
+9. resize canvas
+
+1:50

@@ -31,6 +31,9 @@ export const initDraw = async ({
 }) => {
   const existingShapes: Shape[] = await getExistingShape(roomId);
 
+  // dumb way
+  const shapeType: "rect" | "circle" | "pen" = "circle";
+
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
 
@@ -60,13 +63,28 @@ export const initDraw = async ({
     const width = e.clientX - startX;
     const height = e.clientY - startY;
 
-    const shape: Shape = {
-      type: "Rect",
-      x: startX,
-      y: startY,
-      height,
-      width,
-    };
+    let shape: Shape | null = null;
+
+    if (shapeType === "rect") {
+      shape = {
+        type: "Rect",
+        x: startX,
+        y: startY,
+        height,
+        width,
+      };
+    }
+    if (shapeType === "circle") {
+      const radius = Math.max(width, height) / 2;
+      shape = {
+        type: "circle",
+        radius,
+        centerX: startX + radius,
+        centerY: startY + radius,
+      };
+    }
+
+    if (!shape) return;
 
     existingShapes.push(shape);
 
@@ -87,7 +105,21 @@ export const initDraw = async ({
       clearCanvas({ existingShapes, canvas, ctx });
 
       ctx.strokeStyle = "rgba(225, 225, 225)";
-      ctx.strokeRect(startX, startY, width, height);
+
+      // if (shapeType === "rect") {
+      //   ctx.strokeRect(startX, startY, width, height);
+      // }
+
+      if (shapeType === "circle") {
+        const radius = Math.max(width, height) / 2;
+        const centerX = startX + radius;
+        const centerY = startY + radius;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.closePath();
+      }
     }
   });
 };
@@ -109,6 +141,12 @@ const clearCanvas = ({
     if (shape.type === "Rect") {
       ctx.strokeStyle = "rgba(225, 225, 225)";
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+    }
+    if (shape.type === "circle") {
+      ctx.beginPath();
+      ctx.arc(shape.centerX, shape.centerY, shape.radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.closePath();
     }
   });
 };

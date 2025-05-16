@@ -19,6 +19,10 @@ const Canvas = ({ roomId, socket }: { roomId: string; socket: WebSocket }) => {
       const g = new Game(canvas, roomId, socket);
 
       setGame(g);
+
+      return () => {
+        g.destroy();
+      };
     }
   }, [canvasRef]);
 

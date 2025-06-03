@@ -45,7 +45,7 @@ export const initDraw = async ({
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
 
-    if (message.type === "message") {
+    if (message.type === "chat") {
       const parsedShape = JSON.parse(message.message);
       existingShapes.push(parsedShape.shape);
 

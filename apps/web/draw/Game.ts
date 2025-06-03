@@ -1,3 +1,4 @@
+import { Tool } from "../modules/interface/shape";
 import { getExistingShape } from "./http";
 
 interface Reactangle {
@@ -28,7 +29,7 @@ export class Game {
 
   private startX: number;
   private startY: number;
-  private selectedShape: "rect" | "circle";
+  private selectedShape: Tool;
 
   private isMouseClicked: boolean;
 
@@ -62,7 +63,7 @@ export class Game {
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
   }
 
-  setShape(shape: "rect" | "circle") {
+  setShape(shape: Tool) {
     this.selectedShape = shape;
   }
 

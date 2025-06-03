@@ -9,8 +9,12 @@ import {
   CreateRoomSchema,
 } from "@repo/common/types";
 import { JWT_SECRET } from "@repo/backend-common/config";
+import cors from "cors";
+import { middleware } from "./middleware";
 
 const app = express();
+app.use(express.json());
+app.use(cors());
 
 app.post("/signup", async (req: Request, res: Response) => {
   const parsedData = CreateUserSchema.safeParse(req.body);
@@ -74,7 +78,7 @@ app.post("/signin", async (req: Request, res: Response) => {
   });
 });
 
-app.post("/room", async (req: Request, res: Response) => {
+app.post("/room", middleware, async (req: Request, res: Response) => {
   const parsedData = CreateRoomSchema.safeParse(req.body);
   if (!parsedData) {
     res.json({
@@ -83,11 +87,14 @@ app.post("/room", async (req: Request, res: Response) => {
     return;
   }
 
+  // @ts-ignore: TODO: Fix this
+  const userId = req.userId;
+
   try {
     const room = await prismaClient.room.create({
       data: {
         slug: parsedData.data?.name || "",
-        adminId: "User-id-after-auth",
+        adminId: userId,
       },
     });
 
@@ -104,6 +111,7 @@ app.post("/room", async (req: Request, res: Response) => {
 
 app.get(
   "/chats/:roomId",
+  middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const roomId = Number(req.params.roomid);
@@ -130,6 +138,7 @@ app.get(
 
 app.get(
   "/room/:slug",
+  middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     const slug = req.params.slug;
     const room = await prismaClient.room.findFirst({

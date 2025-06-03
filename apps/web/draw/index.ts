@@ -16,7 +16,15 @@ interface Circle {
   radius: number;
 }
 
-type Shape = Reactangle | Circle;
+interface Pencil {
+  type: "pencil";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+
+type Shape = Reactangle | Circle | Pencil;
 
 export const initDraw = async ({
   ctx,

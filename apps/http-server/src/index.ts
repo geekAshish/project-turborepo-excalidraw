@@ -90,6 +90,8 @@ app.post("/room", middleware, async (req: Request, res: Response) => {
   // @ts-ignore: TODO: Fix this
   const userId = req.userId;
 
+  console.log(userId, parsedData.data?.name, req.body);
+
   try {
     const room = await prismaClient.room.create({
       data: {
@@ -111,7 +113,7 @@ app.post("/room", middleware, async (req: Request, res: Response) => {
 
 app.get(
   "/chats/:roomId",
-  middleware,
+  // middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const roomId = Number(req.params.roomid);
@@ -138,7 +140,7 @@ app.get(
 
 app.get(
   "/room/:slug",
-  middleware,
+  // middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     const slug = req.params.slug;
     const room = await prismaClient.room.findFirst({

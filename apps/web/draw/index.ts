@@ -98,8 +98,8 @@ export const initDraw = async ({
 
     socket.send(
       JSON.stringify({
-        type: "message",
-        shape: JSON.stringify({ shape }),
+        type: "chat",
+        message: JSON.stringify({ shape }),
         roomId,
       })
     );

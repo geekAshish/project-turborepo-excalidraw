@@ -37,7 +37,7 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.existingShapes = [];
-    this.roomId = "";
+    this.roomId = roomId;
     this.socket = socket;
     this.isMouseClicked = false;
     this.startX = 0;
@@ -145,8 +145,8 @@ export class Game {
 
     this.socket.send(
       JSON.stringify({
-        type: "message",
-        shape: JSON.stringify({ shape }),
+        type: "chat",
+        message: JSON.stringify({ shape }),
         roomId: this.roomId,
       })
     );

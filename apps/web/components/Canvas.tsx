@@ -26,7 +26,7 @@ const Canvas = ({ roomId, socket }: { roomId: string; socket: WebSocket }) => {
         g.destroy();
       };
     }
-  }, [canvasRef]);
+  }, [canvasRef, roomId]);
 
   return (
     <div

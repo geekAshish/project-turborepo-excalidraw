@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@repo/ui/Input";
 import { FileInput } from "@repo/ui/FileInput";
 
-import { SignupForm, signupSchema } from "../modules/interface/shape";
+import { SignupForm, signupSchema } from "../modules/interface/zod-validation";
 
 export default function SignupFormComponent() {
   const {
@@ -66,7 +66,7 @@ export default function SignupFormComponent() {
       <FileInput
         label="Profile Photo"
         register={register("photo")}
-        error={errors.photo?.message}
+        error={errors.photo?.message as string}
       />
       {preview && (
         <Image

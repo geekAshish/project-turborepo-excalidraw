@@ -1,17 +1,22 @@
 {
-  "name": "@repo/ui",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@repo/design-system",
+  "version": "1.0.0",
+  "description": "",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
-    "./*": "./src/*.tsx",
+    "./theme.css": "./src/theme.css",
     "./styles.css": "./dist/styles.css"
   },
   "scripts": {
     "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
+    "lint": "eslint src/",
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
-    "lint": "eslint . --max-warnings 0",
-    "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -25,13 +30,14 @@
   },
   "dependencies": {
     "@repo/utils": "workspace:*",
-    "@repo/design-system": "workspace:*",
     "@tailwindcss/cli": "^4.1.11",
     "@tailwindcss/postcss": "^4.1.11",
+    "class-variance-authority": "^0.7.1",
     "postcss": "^8.5.6",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-hook-form": "^7.60.0",
     "tailwindcss": "^4.1.11"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }

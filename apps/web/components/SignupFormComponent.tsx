@@ -43,6 +43,21 @@ export default function SignupFormComponent() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <FileInput
+        label="Profile Photo"
+        register={register("photo")}
+        error={errors.photo?.message as string}
+      />
+      {preview && (
+        <Image
+          src={preview}
+          alt="Preview"
+          width={80}
+          height={30}
+          className="rounded-full object-cover"
+        />
+      )}
+
       <Input
         label="Name"
         register={register("name")}
@@ -63,20 +78,7 @@ export default function SignupFormComponent() {
         placeholder="••••••••"
         type="password"
       />
-      <FileInput
-        label="Profile Photo"
-        register={register("photo")}
-        error={errors.photo?.message as string}
-      />
-      {preview && (
-        <Image
-          src={preview}
-          alt="Preview"
-          width={80}
-          height={80}
-          className="rounded-full object-cover"
-        />
-      )}
+
       <button
         type="submit"
         className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"

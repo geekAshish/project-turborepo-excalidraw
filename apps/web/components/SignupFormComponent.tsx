@@ -10,6 +10,7 @@ import { Input } from "@repo/ui/Input";
 import { FileInput } from "@repo/ui/FileInput";
 
 import { SignupForm, signupSchema } from "../modules/interface/zod-validation";
+import { Button } from "@repo/ui/button";
 
 export default function SignupFormComponent() {
   const {
@@ -44,11 +45,11 @@ export default function SignupFormComponent() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <FileInput
-        label="Profile Photo"
         register={register("photo")}
         error={errors.photo?.message as string}
+        watchFile={watch("photo")}
       />
-      {preview && (
+      {/* {preview && (
         <Image
           src={preview}
           alt="Preview"
@@ -56,16 +57,18 @@ export default function SignupFormComponent() {
           height={30}
           className="rounded-full object-cover"
         />
-      )}
+      )} */}
 
       <Input
         label="Name"
+        name="name"
         register={register("name")}
         error={errors.name?.message}
         placeholder="John Doe"
       />
       <Input
         label="Email"
+        name="email"
         register={register("email")}
         error={errors.email?.message}
         placeholder="john@example.com"
@@ -73,18 +76,16 @@ export default function SignupFormComponent() {
       />
       <Input
         label="Password"
+        name="password"
         register={register("password")}
         error={errors.password?.message}
         placeholder="••••••••"
         type="password"
       />
 
-      <button
-        type="submit"
-        className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
-      >
+      <Button className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition">
         Sign Up
-      </button>
+      </Button>
     </form>
   );
 }

@@ -24,10 +24,11 @@
     "typescript": "5.8.2"
   },
   "dependencies": {
-    "@repo/utils": "workspace:*",
     "@repo/design-system": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@tailwindcss/cli": "^4.1.11",
     "@tailwindcss/postcss": "^4.1.11",
+    "lucide-react": "^0.511.0",
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -1,63 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
-import { Input } from "@repo/ui/Input";
-import { FileInput } from "@repo/ui/FileInput";
-
-import { SignupForm, signupSchema } from "../modules/interface/zod-validation";
+import { FileInput } from "./FileInput";
+import { Input } from "./Input";
 import { Button } from "@repo/ui/button";
 
+import { SignupForm, signupSchema } from "../modules/interface/zod-validation";
+import { signupAction } from "../app/actions/auth";
+
 export default function SignupFormComponent() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [preview, setPreview] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setError,
+    reset,
   } = useForm<SignupForm>({ resolver: zodResolver(signupSchema) });
 
   const photo = watch("photo");
-  const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => {
-    if (photo?.length && photo?.length > 0) {
+    if (photo?.length && photo?.[0]) {
       const file = photo[0];
       const reader = new FileReader();
-      reader.onload = () => setPreview(reader.result as string);
-
-      if (file) {
-        reader.readAsDataURL(file);
-      }
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
     }
   }, [photo]);
 
   const onSubmit = (data: SignupForm) => {
-    console.log("Submitted:", {
-      ...data,
-      photo: data?.photo && data?.photo[0],
+    const { photo, ...rest } = data;
+
+    startTransition(async () => {
+      const res = await signupAction({
+        ...rest,
+        photo: photo?.[0] || "", // Send single file
+      });
+
+      if (!res.success) {
+        setError("root", { type: "manual", message: res.error });
+      } else {
+        toast.success("Signed up successfully!");
+        reset(); // reset form
+        router.push("/dashboard"); // redirect on success
+      }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-5 max-w-sm mx-auto"
+    >
       <FileInput
         register={register("photo")}
         error={errors.photo?.message as string}
-        watchFile={watch("photo")}
+        watchFile={photo}
       />
-      {/* {preview && (
-        <Image
-          src={preview}
-          alt="Preview"
-          width={80}
-          height={30}
-          className="rounded-full object-cover"
-        />
-      )} */}
 
       <Input
         label="Name"
@@ -66,6 +75,7 @@ export default function SignupFormComponent() {
         error={errors.name?.message}
         placeholder="John Doe"
       />
+
       <Input
         label="Email"
         name="email"
@@ -74,6 +84,7 @@ export default function SignupFormComponent() {
         placeholder="john@example.com"
         type="email"
       />
+
       <Input
         label="Password"
         name="password"
@@ -83,8 +94,18 @@ export default function SignupFormComponent() {
         type="password"
       />
 
-      <Button className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition">
-        Sign Up
+      {errors.root?.message && (
+        <p className="text-sm text-red-500 text-center">
+          {errors.root.message}
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        disabled={pending}
+        className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
+      >
+        {pending ? "Signing Up..." : "Sign Up"}
       </Button>
     </form>
   );

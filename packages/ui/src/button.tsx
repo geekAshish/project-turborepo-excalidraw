@@ -3,14 +3,27 @@
 import { ReactNode } from "react";
 
 interface ButtonProps {
+  type: "submit" | "reset" | "button" | undefined;
   children: ReactNode;
   className?: string;
+  disabled?: boolean;
   onClick?: () => void;
 }
 
-export const Button = ({ children, className, onClick }: ButtonProps) => {
+export const Button = ({
+  type = "button",
+  disabled = false,
+  children,
+  className,
+  onClick,
+}: ButtonProps) => {
   return (
-    <button className={className} onClick={onClick}>
+    <button
+      disabled={disabled}
+      type={type}
+      className={className}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

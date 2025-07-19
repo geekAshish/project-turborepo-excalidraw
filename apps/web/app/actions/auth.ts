@@ -8,8 +8,6 @@ export async function signupAction(formData: {
   password: string;
   photo?: File;
 }) {
-  console.log(process.env.NEXT_PUBLIC_BASE_URL, formData);
-
   try {
     const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BASE_URL}/signup`,
@@ -26,6 +24,25 @@ export async function signupAction(formData: {
     return {
       success: false,
       error: error?.response?.data?.message || "Signup failed",
+    };
+  }
+}
+
+export async function signinAction(formData: {
+  email: string;
+  password: string;
+}) {
+  try {
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/signin`,
+      formData
+    );
+
+    return { success: true, data: res.data };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error?.response?.data?.message || "Signin failed",
     };
   }
 }

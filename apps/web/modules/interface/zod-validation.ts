@@ -17,4 +17,10 @@ export const signupSchema = z.object({
     .refine((file) => !file || file.length <= 1, "Only one file allowed"),
 });
 
+export const signinSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be 6+ characters"),
+});
+
 export type SignupForm = z.infer<typeof signupSchema>;
+export type SigninForm = z.infer<typeof signinSchema>;

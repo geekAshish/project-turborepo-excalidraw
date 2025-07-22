@@ -10,7 +10,7 @@ import { Input } from "./Input";
 import { Button } from "@repo/ui/button";
 
 import { SigninForm, signinSchema } from "../modules/interface/zod-validation";
-import { signinAction } from "../app/actions/auth";
+import { signinAction } from "../modules/apis/auth";
 
 export default function SigninFormComponent() {
   const router = useRouter();

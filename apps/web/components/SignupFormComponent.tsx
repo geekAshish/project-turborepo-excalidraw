@@ -11,7 +11,7 @@ import { Input } from "./Input";
 import { Button } from "@repo/ui/button";
 
 import { SignupForm, signupSchema } from "../modules/interface/zod-validation";
-import { signupAction } from "../app/actions/auth";
+import { signupAction } from "../modules/apis/auth";
 
 export default function SignupFormComponent() {
   const router = useRouter();
@@ -42,6 +42,8 @@ export default function SignupFormComponent() {
     const { photo, ...rest } = data;
 
     startTransition(async () => {
+      console.log("this is getting call");
+
       const res = await signupAction({
         ...rest,
         photo: photo?.[0] || "", // Send single file
@@ -52,7 +54,7 @@ export default function SignupFormComponent() {
       } else {
         toast.success("Signed up successfully!");
         reset(); // reset form
-        router.push("/dashboard"); // redirect on success
+        // router.push("/dashboard"); // redirect on success
       }
     });
   };

@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 import { prismaClient } from "@repo/db/client";
 
@@ -10,42 +11,75 @@ import {
 } from "@repo/common/types";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import cors from "cors";
+import multer from "multer";
 import { middleware } from "./middleware";
 
 const app = express();
 app.use(express.json());
+const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 
-app.post("/signup", async (req: Request, res: Response) => {
-  const parsedData = CreateUserSchema.safeParse(req.body);
+app.post(
+  "/signup",
+  upload.single("avatar"),
+  async (req: Request, res: Response) => {
+    // Validate request body
+    console.log(req.body, "how are you baddie");
 
-  if (!parsedData) {
-    res.json({
-      msg: "incorrent",
-    });
-    return;
+    const parsed = CreateUserSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      res.status(400).json({
+        error: "Invalid input",
+        issues: parsed.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    const { email, password, name, photo } = parsed.data;
+
+    try {
+      // Check for existing user
+      const existingUser = await prismaClient.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        res.status(409).json({
+          error: "User already exists with this email",
+        });
+        return;
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create user
+      const user = await prismaClient.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          photo,
+        },
+      });
+
+      res.status(201).json({
+        userId: user.id,
+        message: "User created successfully",
+      });
+      return;
+    } catch (error: any) {
+      console.error("Signup error:", error);
+
+      res.status(500).json({
+        error: "Internal server error",
+      });
+      return;
+    }
   }
+);
 
-  try {
-    const user = await prismaClient.user.create({
-      data: {
-        email: parsedData.data?.username || "",
-        password: parsedData.data?.password || "", // TODO: has the password
-        name: parsedData.data?.name || "",
-        photo: "",
-      },
-    });
-
-    // db call
-    res.json({
-      userId: user.id,
-    });
-  } catch (e) {
-    res.status(400).json({
-      msg: e,
-    });
-  }
-});
 app.post("/signin", async (req: Request, res: Response) => {
   const parsedData = SignInSchema.safeParse(req.body);
   if (!parsedData) {
@@ -58,7 +92,7 @@ app.post("/signin", async (req: Request, res: Response) => {
   // TODO: compare the hashed pws here
   const user = await prismaClient.user.findFirst({
     where: {
-      email: parsedData.data?.username,
+      email: parsedData.data?.email,
       password: parsedData.data?.password,
     },
   });

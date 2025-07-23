@@ -1,13 +1,22 @@
-import { z } from "zod";
+import { email, z } from "zod";
 
 export const CreateUserSchema = z.object({
-  username: z.string().min(10).max(30),
+  email: z.string().email(),
   password: z.string(),
   name: z.string(),
+  photo: z
+    .any()
+    .optional()
+    .refine(
+      (file) =>
+        typeof window === "undefined" || !file || file instanceof FileList,
+      "Invalid file input"
+    )
+    .refine((file) => !file || file.length <= 1, "Only one file allowed"),
 });
 
 export const SignInSchema = z.object({
-  username: z.string().min(10).max(30),
+  email: z.string(),
   password: z.string(),
 });
 

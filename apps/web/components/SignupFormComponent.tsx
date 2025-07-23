@@ -42,15 +42,15 @@ export default function SignupFormComponent() {
     const { photo, ...rest } = data;
 
     startTransition(async () => {
-      console.log("this is getting call");
-
       const res = await signupAction({
         ...rest,
-        photo: photo?.[0] || "", // Send single file
+        photo: photo?.[0], // Send single file
       });
 
       if (!res.success) {
-        setError("root", { type: "manual", message: res.error });
+        console.log(res.error);
+
+        setError("root", { type: "manual", message: res.error.error });
       } else {
         toast.success("Signed up successfully!");
         reset(); // reset form

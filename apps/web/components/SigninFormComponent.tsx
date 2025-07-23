@@ -33,7 +33,7 @@ export default function SigninFormComponent() {
       });
 
       if (!res.success) {
-        setError("root", { type: "manual", message: res.error });
+        setError("root", { type: "manual", message: res.error.error });
       } else {
         toast.success("Signed up successfully!");
         reset(); // reset form

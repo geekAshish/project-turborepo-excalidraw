@@ -17,9 +17,11 @@ export async function signupAction(formData: {
 
     return { success: true, data: res.data };
   } catch (error: any) {
+    console.log("this is error", error);
+
     return {
       success: false,
-      error: error?.response?.data?.message || "Signup failed",
+      error: error?.response?.data || "Signup failed",
     };
   }
 }
@@ -35,7 +37,7 @@ export async function signinAction(formData: {
   } catch (error: any) {
     return {
       success: false,
-      error: error?.response?.data?.message || "Signin failed",
+      error: error?.response?.data || "Signin failed",
     };
   }
 }

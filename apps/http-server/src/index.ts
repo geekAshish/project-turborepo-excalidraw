@@ -155,8 +155,11 @@ app.get(
   // middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const roomId = Number(req.params.roomid);
-      const message = await prismaClient.chat.findMany({
+      const roomId = Number(req.params.roomId);
+      if (!roomId) {
+        res.status(400).json({ message: "invalid room id" });
+      }
+      const messages = await prismaClient.chat.findMany({
         where: {
           id: roomId,
         },
@@ -167,11 +170,11 @@ app.get(
       });
 
       res.json({
-        message,
+        messages,
       });
     } catch (e) {
       res.status(500).json({
-        message: [],
+        message: "something went wrong",
       });
     }
   }

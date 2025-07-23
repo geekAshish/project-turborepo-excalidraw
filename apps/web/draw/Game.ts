@@ -91,11 +91,13 @@ export class Game {
         this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
       }
       if (shape.type === "circle") {
+        const circleRadius = Math.abs(shape.radius);
+
         this.ctx.beginPath();
         this.ctx.arc(
           shape.centerX,
           shape.centerY,
-          shape.radius,
+          circleRadius,
           0,
           Math.PI * 2
         );
@@ -166,7 +168,7 @@ export class Game {
       }
 
       if (this.selectedShape === "circle") {
-        const radius = Math.max(width, height) / 2;
+        const radius = Math.abs(Math.max(width, height) / 2);
         const centerX = this.startX + radius;
         const centerY = this.startY + radius;
 

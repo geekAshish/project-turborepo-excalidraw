@@ -44,17 +44,19 @@ export default function SignupFormComponent() {
     startTransition(async () => {
       const res = await signupAction({
         ...rest,
-        photo: photo?.[0], // Send single file
+        // photo: photo?.[0], // Send single file
       });
 
       if (!res.success) {
-        console.log(res.error);
-
         setError("root", { type: "manual", message: res.error.error });
       } else {
         toast.success("Signed up successfully!");
         reset(); // reset form
-        // router.push("/dashboard"); // redirect on success
+        console.log(res);
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userinfo", res.data.user);
+
+        router.push("/room");
       }
     });
   };

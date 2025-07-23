@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { z } from "zod";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const CreateRoomSchema = z.object({
   name: z.string().min(1, "Room name is required"),
@@ -13,6 +14,7 @@ const CreateRoomSchema = z.object({
 type CreateRoomFormData = z.infer<typeof CreateRoomSchema>;
 
 export default function CreateRoomForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -36,16 +38,22 @@ export default function CreateRoomForm() {
           data,
           {
             headers: {
-              Authorization: "Bearer token-here", // optional, if your middleware checks it
+              Authorization: `Bearer ${localStorage.getItem("token")}`, // optional, if your middleware checks it
             },
           }
         );
+
+        console.log(res);
 
         if (res.data.roomId) {
           setMessage({
             type: "success",
             text: `Room created! ID: ${res.data.roomId}`,
           });
+
+          setInterval(() => {
+            router.push(`room/${res.data.roomId}`);
+          }, 500);
         } else {
           setMessage({
             type: "error",

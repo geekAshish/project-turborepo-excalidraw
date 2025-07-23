@@ -21,11 +21,8 @@ app.use(cors());
 
 app.post(
   "/signup",
-  upload.single("avatar"),
+  upload.single("photo"),
   async (req: Request, res: Response) => {
-    // Validate request body
-    console.log(req.body, "how are you baddie");
-
     const parsed = CreateUserSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -36,10 +33,10 @@ app.post(
       return;
     }
 
-    const { email, password, name, photo } = parsed.data;
+    const { email, password, name } = parsed.data;
 
     try {
-      // Check for existing user
+      // Checking for existing user
       const existingUser = await prismaClient.user.findUnique({
         where: { email },
       });
@@ -51,7 +48,7 @@ app.post(
         return;
       }
 
-      // Hash password
+      // Hashing password
       const hashedPassword = await bcrypt.hash(password, 12);
 
       // Create user
@@ -60,21 +57,29 @@ app.post(
           email,
           password: hashedPassword,
           name,
-          photo,
+          photo: "",
         },
       });
 
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
       res.status(201).json({
-        userId: user.id,
         message: "User created successfully",
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
       });
       return;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Signup error:", error);
-
-      res.status(500).json({
-        error: "Internal server error",
-      });
+      res.status(500).json({ error: "Internal server error" });
       return;
     }
   }
@@ -177,13 +182,18 @@ app.get(
   // middleware,
   async (req: Request, res: Response, next: NextFunction) => {
     const slug = req.params.slug;
+    if (!slug) {
+      res.status(200).json({ msg: "invalid room id" });
+      return;
+    }
+
     const room = await prismaClient.room.findFirst({
       where: {
-        slug,
+        id: +slug,
       },
     });
 
-    res.json({
+    res.status(200).json({
       room,
     });
   }

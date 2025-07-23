@@ -11,7 +11,8 @@ export async function signupAction(formData: {
   try {
     const res = await axios.post(`${BASE_URL}/signup`, formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        // "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
 

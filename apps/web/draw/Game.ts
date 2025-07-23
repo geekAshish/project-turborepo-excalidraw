@@ -116,8 +116,11 @@ export class Game {
   mouseUpHandler = (e) => {
     this.isMouseClicked = false;
 
-    const width = e.clientX - this.startX;
-    const height = e.clientY - this.startY;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    const width = mouseX - this.startX;
+    const height = mouseY - this.startY;
 
     const selectedShape = this.selectedShape;
     let shape: Shape | null = null;
@@ -127,17 +130,24 @@ export class Game {
         type: "Rect",
         x: this.startX,
         y: this.startY,
-        height,
         width,
+        height,
       };
     }
+
     if (selectedShape === "circle") {
-      const radius = Math.max(width, height) / 2;
+      // Use half of the diagonal as radius
+      const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
+
+      // Calculate center based on drag direction
+      const centerX = this.startX + width / 2;
+      const centerY = this.startY + height / 2;
+
       shape = {
         type: "circle",
         radius,
-        centerX: this.startX + radius,
-        centerY: this.startY + radius,
+        centerX,
+        centerY,
       };
     }
 
@@ -156,11 +166,13 @@ export class Game {
 
   mouseMoveHandler = (e) => {
     if (this.isMouseClicked) {
-      const width = e.clientX - this.startX;
-      const height = e.clientY - this.startY;
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const width = mouseX - this.startX;
+      const height = mouseY - this.startY;
 
       this.clearCanvas();
-
       this.ctx.strokeStyle = "rgba(225, 225, 225)";
 
       if (this.selectedShape === "rect") {
@@ -168,9 +180,12 @@ export class Game {
       }
 
       if (this.selectedShape === "circle") {
-        const radius = Math.abs(Math.max(width, height) / 2);
-        const centerX = this.startX + radius;
-        const centerY = this.startY + radius;
+        // Calculate the bounding box
+        const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
+
+        // Center of the bounding box
+        const centerX = this.startX + width / 2;
+        const centerY = this.startY + height / 2;
 
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);

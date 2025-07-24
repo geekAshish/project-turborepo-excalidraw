@@ -1,5 +1,7 @@
+import axios from "axios";
 import { Tool } from "../modules/interface/shape";
 import { getExistingShape } from "./http";
+import { BACKEND_URL } from "../app/config";
 
 interface Reactangle {
   type: "Rect";
@@ -121,13 +123,13 @@ export class Game {
 
     // Draw preview if available
     if (this.previewShape) {
-      this.ctx.strokeStyle = "rgba(225, 225, 225)";
       this.drawShape(this.previewShape);
     }
   }
 
   drawShape(shape: Shape) {
     this.ctx.beginPath();
+    this.ctx.strokeStyle = "rgba(225, 225, 225)";
 
     if (shape.type === "Rect") {
       this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
@@ -251,8 +253,6 @@ export class Game {
     }
 
     if (!shape) return;
-
-    console.log("setting up shape", shape);
 
     this.existingShapes.push(shape);
     this.previewShape = null; // ✅ clear preview

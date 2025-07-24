@@ -42,6 +42,8 @@ export class Game {
   private startY: number;
   private selectedShape: Tool;
   private penPath: { x: number; y: number }[];
+  private previewShape: Shape | null;
+  private clientId: string;
 
   private isMouseClicked: boolean;
 
@@ -49,6 +51,7 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.existingShapes = [];
+    this.previewShape = null;
     this.redoStack = [];
     this.roomId = roomId;
     this.socket = socket;
@@ -57,6 +60,7 @@ export class Game {
     this.startY = 0;
     this.selectedShape = "rect";
     this.penPath = [];
+    this.clientId = crypto.randomUUID();
 
     this.init();
     this.initHandlers();
@@ -95,9 +99,13 @@ export class Game {
       const message = JSON.parse(event.data);
 
       if (message.type === "chat") {
-        const parsedShape = JSON.parse(message.message);
-        this.existingShapes.push(parsedShape.shape);
+        const { shape, senderId } = JSON.parse(message.message);
 
+        // Ignore shapes sent by this same client
+        if (senderId === this.clientId) return;
+
+        console.log("Receiving shape from another client:", shape);
+        this.existingShapes.push(shape);
         this.clearCanvas();
       }
     };
@@ -108,34 +116,39 @@ export class Game {
     this.ctx.fillStyle = "rgba(0, 0, 0)";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.existingShapes.map((shape) => {
-      this.ctx.beginPath();
+    // Draw saved shapes
+    this.existingShapes.forEach((shape) => this.drawShape(shape));
 
-      if (shape.type === "Rect") {
-        this.ctx.strokeStyle = "rgba(225, 225, 225)";
-        this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
-      }
-      if (shape.type === "circle") {
-        const circleRadius = Math.abs(shape.radius);
+    // Draw preview if available
+    if (this.previewShape) {
+      this.ctx.strokeStyle = "rgba(225, 225, 225)";
+      this.drawShape(this.previewShape);
+    }
+  }
 
-        this.ctx.beginPath();
-        this.ctx.arc(
-          shape.centerX,
-          shape.centerY,
-          circleRadius,
-          0,
-          Math.PI * 2
-        );
-        this.ctx.stroke();
-        this.ctx.closePath();
-      }
+  drawShape(shape: Shape) {
+    this.ctx.beginPath();
 
-      if (shape.type === "pen") {
-        this.drawPenPath(shape.path);
-      }
+    if (shape.type === "Rect") {
+      this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+    }
 
-      this.ctx.closePath();
-    });
+    if (shape.type === "circle") {
+      this.ctx.arc(
+        shape.centerX,
+        shape.centerY,
+        Math.abs(shape.radius),
+        0,
+        Math.PI * 2
+      );
+      this.ctx.stroke();
+    }
+
+    if (shape.type === "pen") {
+      this.drawPenPath(shape.path);
+    }
+
+    this.ctx.closePath();
   }
 
   undo() {
@@ -217,10 +230,7 @@ export class Game {
     }
 
     if (selectedShape === "circle") {
-      // Use half of the diagonal as radius
       const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
-
-      // Calculate center based on drag direction
       const centerX = this.startX + width / 2;
       const centerY = this.startY + height / 2;
 
@@ -235,60 +245,70 @@ export class Game {
     if (selectedShape === "pen" && this.penPath.length > 0) {
       shape = {
         type: "pen",
-        path: [...this.penPath], // save current path
+        path: [...this.penPath],
       };
-      this.penPath = []; // clear after storing
+      this.penPath = [];
     }
 
     if (!shape) return;
 
-    this.existingShapes.push(shape);
+    console.log("setting up shape", shape);
 
+    this.existingShapes.push(shape);
+    this.previewShape = null; // ✅ clear preview
     this.clearCanvas();
 
     this.socket.send(
       JSON.stringify({
         type: "chat",
-        message: JSON.stringify({ shape }),
+        message: JSON.stringify({ shape, senderId: this.clientId }),
         roomId: this.roomId,
       })
     );
   };
 
   mouseMoveHandler = (e) => {
-    if (this.isMouseClicked) {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+    if (!this.isMouseClicked) return;
 
-      const width = mouseX - this.startX;
-      const height = mouseY - this.startY;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+    const width = mouseX - this.startX;
+    const height = mouseY - this.startY;
 
-      this.clearCanvas();
-      this.ctx.strokeStyle = "rgba(225, 225, 225)";
+    this.previewShape = null;
 
-      if (this.selectedShape === "rect") {
-        this.ctx.strokeRect(this.startX, this.startY, width, height);
-      }
-
-      if (this.selectedShape === "circle") {
-        // Calculate the bounding box
-        const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
-
-        // Center of the bounding box
-        const centerX = this.startX + width / 2;
-        const centerY = this.startY + height / 2;
-
-        this.ctx.beginPath();
-        this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        this.ctx.stroke();
-        this.ctx.closePath();
-      }
-
-      if (this.selectedShape === "pen") {
-        this.penPath.push({ x: e.clientX, y: e.clientY });
-        this.drawPenPath(this.penPath);
-      }
+    if (this.selectedShape === "rect") {
+      this.previewShape = {
+        type: "Rect",
+        x: this.startX,
+        y: this.startY,
+        width,
+        height,
+      };
     }
+
+    if (this.selectedShape === "circle") {
+      const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
+      const centerX = this.startX + width / 2;
+      const centerY = this.startY + height / 2;
+
+      this.previewShape = {
+        type: "circle",
+        radius,
+        centerX,
+        centerY,
+      };
+    }
+
+    if (this.selectedShape === "pen") {
+      this.penPath.push({ x: e.clientX, y: e.clientY });
+      this.previewShape = {
+        type: "pen",
+        path: [...this.penPath],
+      };
+    }
+
+    this.clearCanvas(); // Redraw everything including preview
   };
 
   initMouseHandlers() {

@@ -120,23 +120,42 @@ export class Game {
       }
 
       if (shape.type === "pen") {
-        const path = shape.path;
-        if (path[0] && path.length > 0) {
-          this.ctx.moveTo(path[0].x, path[0].y);
-
-          for (let i = 1; i < path.length; i++) {
-            const point = path[i];
-            if (point) {
-              this.ctx.lineTo(point.x, point.y);
-            }
-          }
-          this.ctx.stroke();
-        }
+        this.drawPenPath(shape.path);
       }
 
       this.ctx.closePath();
     });
   }
+
+  drawPenPath = (path: { x: number; y: number }[]) => {
+    if (path.length < 2) return;
+    if (!path[0]) return;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(path[0].x, path[0].y);
+
+    for (let i = 1; i < path.length - 1; i++) {
+      const current = path[i];
+      const next = path[i + 1];
+
+      if (!current || !next) continue; // ✅ safety check
+
+      const midPoint = {
+        x: (current.x + next.x) / 2,
+        y: (current.y + next.y) / 2,
+      };
+
+      this.ctx.quadraticCurveTo(current.x, current.y, midPoint.x, midPoint.y);
+    }
+
+    const last = path[path.length - 1];
+    if (last) {
+      this.ctx.lineTo(last.x, last.y);
+    }
+
+    this.ctx.stroke();
+    this.ctx.closePath();
+  };
 
   mouseDownHandler = (e) => {
     this.isMouseClicked = true;
@@ -198,6 +217,8 @@ export class Game {
 
     this.existingShapes.push(shape);
 
+    this.clearCanvas();
+
     this.socket.send(
       JSON.stringify({
         type: "chat",
@@ -236,25 +257,9 @@ export class Game {
         this.ctx.closePath();
       }
 
-      if (this.selectedShape === "pen" && this.penPath.length > 0) {
+      if (this.selectedShape === "pen") {
         this.penPath.push({ x: e.clientX, y: e.clientY });
-
-        this.ctx.beginPath();
-        const firstPoint = this.penPath[0];
-
-        if (firstPoint) {
-          this.ctx.moveTo(firstPoint.x, firstPoint.y);
-
-          for (let i = 1; i < this.penPath.length; i++) {
-            const point = this.penPath[i];
-            if (point) {
-              this.ctx.lineTo(point.x, point.y);
-            }
-          }
-        }
-
-        this.ctx.stroke();
-        this.ctx.closePath();
+        this.drawPenPath(this.penPath);
       }
     }
   };

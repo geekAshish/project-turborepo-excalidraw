@@ -98,6 +98,8 @@ export class Game {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.existingShapes.map((shape) => {
+      this.ctx.beginPath();
+
       if (shape.type === "Rect") {
         this.ctx.strokeStyle = "rgba(225, 225, 225)";
         this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);

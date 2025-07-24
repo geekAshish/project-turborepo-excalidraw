@@ -34,6 +34,7 @@ export class Game {
   socket: WebSocket;
 
   private existingShapes: Shape[];
+  private redoStack: Shape[];
 
   private roomId: string;
 
@@ -48,6 +49,7 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.existingShapes = [];
+    this.redoStack = [];
     this.roomId = roomId;
     this.socket = socket;
     this.isMouseClicked = false;
@@ -65,6 +67,15 @@ export class Game {
   async init() {
     this.existingShapes = await getExistingShape(this.roomId);
     this.clearCanvas();
+
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "z") {
+        this.undo();
+      }
+      if (e.ctrlKey && (e.key === "y" || (e.shiftKey && e.key === "z"))) {
+        this.redo();
+      }
+    });
   }
 
   destroy() {
@@ -125,6 +136,22 @@ export class Game {
 
       this.ctx.closePath();
     });
+  }
+
+  undo() {
+    const lastShape = this.existingShapes.pop();
+    if (lastShape) {
+      this.redoStack.push(lastShape);
+      this.clearCanvas();
+    }
+  }
+
+  redo() {
+    const shape = this.redoStack.pop();
+    if (shape) {
+      this.existingShapes.push(shape);
+      this.clearCanvas();
+    }
   }
 
   drawPenPath = (path: { x: number; y: number }[]) => {

@@ -16,7 +16,17 @@ interface Circle {
   radius: number;
 }
 
-type Shape = Reactangle | Circle;
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Pen {
+  type: "pen";
+  path: Point[];
+}
+
+type Shape = Reactangle | Circle | Pen;
 
 export class Game {
   private canvas: HTMLCanvasElement;
@@ -30,6 +40,7 @@ export class Game {
   private startX: number;
   private startY: number;
   private selectedShape: Tool;
+  private penPath: { x: number; y: number }[];
 
   private isMouseClicked: boolean;
 
@@ -43,6 +54,7 @@ export class Game {
     this.startX = 0;
     this.startY = 0;
     this.selectedShape = "rect";
+    this.penPath = [];
 
     this.init();
     this.initHandlers();
@@ -104,6 +116,23 @@ export class Game {
         this.ctx.stroke();
         this.ctx.closePath();
       }
+
+      if (shape.type === "pen") {
+        const path = shape.path;
+        if (path[0] && path.length > 0) {
+          this.ctx.moveTo(path[0].x, path[0].y);
+
+          for (let i = 1; i < path.length; i++) {
+            const point = path[i];
+            if (point) {
+              this.ctx.lineTo(point.x, point.y);
+            }
+          }
+          this.ctx.stroke();
+        }
+      }
+
+      this.ctx.closePath();
     });
   }
 
@@ -111,6 +140,10 @@ export class Game {
     this.isMouseClicked = true;
     this.startX = e.clientX;
     this.startY = e.clientY;
+
+    if (this.selectedShape === "pen") {
+      this.penPath = [{ x: e.clientX, y: e.clientY }];
+    }
   };
 
   mouseUpHandler = (e) => {
@@ -151,6 +184,14 @@ export class Game {
       };
     }
 
+    if (selectedShape === "pen" && this.penPath.length > 0) {
+      shape = {
+        type: "pen",
+        path: [...this.penPath], // save current path
+      };
+      this.penPath = []; // clear after storing
+    }
+
     if (!shape) return;
 
     this.existingShapes.push(shape);
@@ -189,6 +230,27 @@ export class Game {
 
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.closePath();
+      }
+
+      if (this.selectedShape === "pen" && this.penPath.length > 0) {
+        this.penPath.push({ x: e.clientX, y: e.clientY });
+
+        this.ctx.beginPath();
+        const firstPoint = this.penPath[0];
+
+        if (firstPoint) {
+          this.ctx.moveTo(firstPoint.x, firstPoint.y);
+
+          for (let i = 1; i < this.penPath.length; i++) {
+            const point = this.penPath[i];
+            if (point) {
+              this.ctx.lineTo(point.x, point.y);
+            }
+          }
+        }
+
         this.ctx.stroke();
         this.ctx.closePath();
       }

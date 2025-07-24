@@ -20,9 +20,9 @@ function Topbar({
       <div className="flex gap-t">
         <IconButton
           onClick={() => {
-            setSelectedTool("pencil");
+            setSelectedTool("pen");
           }}
-          activated={selectedTool === "pencil"}
+          activated={selectedTool === "pen"}
           icon={<Pencil />}
         />
         <IconButton

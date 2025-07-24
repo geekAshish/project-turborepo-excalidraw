@@ -113,6 +113,38 @@ export default function CreateRoomForm() {
           {message.text}
         </div>
       )}
+
+      <div className="pt-6 border-t border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          🚪 Join a Room
+        </h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const target = e.target as HTMLFormElement;
+            const roomIdInput = target.roomId as HTMLInputElement;
+            const roomId = roomIdInput.value.trim();
+
+            if (roomId) {
+              window.location.href = `/room/${roomId}`;
+            }
+          }}
+          className="space-y-4"
+        >
+          <input
+            type="text"
+            name="roomId"
+            placeholder="Enter Room ID"
+            className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="w-full py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium transition"
+          >
+            Join Room
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

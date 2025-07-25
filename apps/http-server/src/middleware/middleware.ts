@@ -7,6 +7,8 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
 
   const decoded = jwt.verify(token, JWT_SECRET);
 
+  console.log("decoded jwt", decoded);
+
   if (decoded) {
     // @ts-ignore: TODO: Fix this
     req.userId = decoded.userId;

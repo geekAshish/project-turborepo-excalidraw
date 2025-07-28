@@ -1,6 +1,6 @@
 import { Tool } from "../modules/interface/shape";
 import { IconButton } from "./IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Eraser, Pencil, RectangleHorizontalIcon } from "lucide-react";
 
 function Topbar({
   selectedTool,
@@ -38,6 +38,13 @@ function Topbar({
           }}
           activated={selectedTool === "circle"}
           icon={<Circle />}
+        ></IconButton>
+        <IconButton
+          onClick={() => {
+            setSelectedTool("eraser");
+          }}
+          activated={selectedTool === "eraser"}
+          icon={<Eraser />}
         ></IconButton>
       </div>
     </div>

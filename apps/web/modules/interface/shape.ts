@@ -1,1 +1,1 @@
-export type Tool = "circle" | "rect" | "pen";
+export type Tool = "circle" | "rect" | "pen" | "eraser";

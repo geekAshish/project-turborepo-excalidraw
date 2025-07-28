@@ -106,7 +106,6 @@ export class Game {
         // Ignore shapes sent by this same client
         if (senderId === this.clientId) return;
 
-        console.log("Receiving shape from another client:", shape);
         this.existingShapes.push(shape);
         this.clearCanvas();
       }
@@ -199,6 +198,83 @@ export class Game {
     this.ctx.closePath();
   };
 
+  eraseAtPoint(x: number, y: number) {
+    const hitRadius = 10; // radius around cursor to detect hit
+
+    // Reverse loop so we can safely remove from array
+    for (let i = this.existingShapes.length - 1; i >= 0; i--) {
+      const shape = this.existingShapes[i];
+      if (this.isPointNearShape(x, y, shape, hitRadius)) {
+        this.existingShapes.splice(i, 1); // Remove the shape
+        this.clearCanvas(); // Redraw canvas
+        break; // Remove only one shape per click
+      }
+    }
+  }
+
+  isPointNearShape(
+    x: number,
+    y: number,
+    shape: Shape | undefined,
+    radius: number
+  ) {
+    if (!shape) return;
+
+    if (shape.type === "Rect") {
+      return (
+        x >= shape.x - radius &&
+        x <= shape.x + shape.width + radius &&
+        y >= shape.y - radius &&
+        y <= shape.y + shape.height + radius
+      );
+    }
+
+    if (shape.type === "circle") {
+      const dx = x - shape.centerX;
+      const dy = y - shape.centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return distance <= shape.radius + radius;
+    }
+
+    if (shape.type === "pen") {
+      // Check if point is near any segment
+      for (let i = 0; i < shape.path.length - 1; i++) {
+        const a = shape.path[i];
+        const b = shape.path[i + 1];
+        if (this.isPointNearLineSegment(x, y, a, b, radius)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  isPointNearLineSegment(
+    x: number,
+    y: number,
+    a: { x: number; y: number } | undefined,
+    b: { x: number; y: number } | undefined,
+    threshold: number
+  ) {
+    if (!a) return;
+    if (!b) return;
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq === 0) return false;
+
+    const t = ((x - a.x) * dx + (y - a.y) * dy) / lengthSq;
+    const clampedT = Math.max(0, Math.min(1, t));
+    const closestX = a.x + clampedT * dx;
+    const closestY = a.y + clampedT * dy;
+
+    const dist = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+    return dist <= threshold;
+  }
+
   mouseDownHandler = (e) => {
     this.isMouseClicked = true;
     this.startX = e.clientX;
@@ -220,6 +296,11 @@ export class Game {
 
     const selectedShape = this.selectedShape;
     let shape: Shape | null = null;
+
+    if (this.selectedShape === "eraser") {
+      this.eraseAtPoint(mouseX, mouseY);
+      return;
+    }
 
     if (selectedShape === "rect") {
       shape = {

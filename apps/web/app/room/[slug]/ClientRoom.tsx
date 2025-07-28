@@ -1,9 +1,10 @@
 "use client";
 
-import RoomCanvas from "../../../components/RoomCanvas";
 import { useEffect, useState } from "react";
-import { getRoomId } from "../../../draw/http";
 import { useRouter } from "next/navigation";
+
+import { getRoomId } from "../../../draw/http";
+import RoomCanvas from "../../../components/RoomCanvas";
 
 export default function ClientRoom({ slug }: { slug: string }) {
   const [roomId, setRoomId] = useState<string | null>(null);

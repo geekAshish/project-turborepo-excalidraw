@@ -12,7 +12,7 @@ import {
 import { JWT_SECRET } from "@repo/backend-common/config";
 import cors from "cors";
 import multer from "multer";
-import { middleware } from "./middleware/middleware";
+import { auth } from "./middleware/middleware";
 
 const app = express();
 app.use(express.json());
@@ -117,7 +117,7 @@ app.post("/signin", async (req: Request, res: Response) => {
   });
 });
 
-app.post("/room", middleware, async (req: Request, res: Response) => {
+app.post("/room", auth, async (req: Request, res: Response) => {
   const parsedData = CreateRoomSchema.safeParse(req.body);
   if (!parsedData) {
     res.json({
@@ -150,7 +150,7 @@ app.post("/room", middleware, async (req: Request, res: Response) => {
 
 app.get(
   "/chats/:roomId",
-  middleware,
+  auth,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const roomId = Number(req.params.roomId);
@@ -179,7 +179,7 @@ app.get(
 
 app.get(
   "/room/:slug",
-  middleware,
+  auth,
   async (req: Request, res: Response, next: NextFunction) => {
     const slug = req.params.slug;
     if (!slug) {

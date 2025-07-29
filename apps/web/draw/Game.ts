@@ -1,7 +1,5 @@
-import axios from "axios";
 import { Tool } from "../modules/interface/shape";
 import { getExistingShape } from "./http";
-import { BACKEND_URL } from "../app/config";
 
 interface Reactangle {
   type: "Rect";
@@ -9,6 +7,7 @@ interface Reactangle {
   y: number;
   width: number;
   height: number;
+  shapeId: string;
 }
 
 interface Circle {
@@ -16,16 +15,18 @@ interface Circle {
   centerX: number;
   centerY: number;
   radius: number;
+  shapeId: string;
 }
 
-interface Point {
+interface Path {
   x: number;
   y: number;
 }
 
 interface Pen {
   type: "pen";
-  path: Point[];
+  path: Path[];
+  shapeId: string;
 }
 
 type Shape = Reactangle | Circle | Pen;
@@ -108,6 +109,14 @@ export class Game {
         if (senderId === this.clientId) return;
 
         this.existingShapes.push(shape);
+        this.clearCanvas();
+      }
+
+      if (message.type === "erase") {
+        const { shapeId } = message;
+        this.existingShapes = this.existingShapes.filter(
+          (s) => s.shapeId !== shapeId
+        );
         this.clearCanvas();
       }
     };
@@ -200,17 +209,34 @@ export class Game {
   };
 
   eraseAtPoint(x: number, y: number) {
-    const hitRadius = 10; // radius around cursor to detect hit
-
-    // Reverse loop so we can safely remove from array
-    for (let i = this.existingShapes.length - 1; i >= 0; i--) {
-      const shape = this.existingShapes[i];
-      if (this.isPointNearShape(x, y, shape, hitRadius)) {
-        this.existingShapes.splice(i, 1); // Remove the shape
-        this.clearCanvas(); // Redraw canvas
-        break; // Remove only one shape per click
+    const shape = this.existingShapes.find((s) => {
+      if (s.type === "Rect") {
+        return (
+          x >= s.x && x <= s.x + s.width && y >= s.y && y <= s.y + s.height
+        );
       }
-    }
+      if (s.type === "circle") {
+        const dx = x - s.centerX;
+        const dy = y - s.centerY;
+        return Math.sqrt(dx * dx + dy * dy) <= s.radius;
+      }
+      if (s.type === "pen") {
+        return s.path.some(
+          (pt) => Math.abs(pt.x - x) < 5 && Math.abs(pt.y - y) < 5
+        );
+      }
+      return false;
+    });
+
+    if (!shape) return;
+
+    this.socket.send(
+      JSON.stringify({
+        type: "erase",
+        roomId: this.roomId,
+        shapeId: shape.shapeId,
+      })
+    );
   }
 
   isPointNearShape(
@@ -291,17 +317,19 @@ export class Game {
 
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-
-    const width = mouseX - this.startX;
-    const height = mouseY - this.startY;
-
-    const selectedShape = this.selectedShape;
-    let shape: Shape | null = null;
+    const shapeId = crypto.randomUUID();
 
     if (this.selectedShape === "eraser") {
       this.eraseAtPoint(mouseX, mouseY);
       return;
     }
+
+    let shape: Shape | null = null;
+
+    const width = mouseX - this.startX;
+    const height = mouseY - this.startY;
+
+    const selectedShape = this.selectedShape;
 
     if (selectedShape === "rect") {
       shape = {
@@ -310,6 +338,7 @@ export class Game {
         y: this.startY,
         width,
         height,
+        shapeId,
       };
     }
 
@@ -323,6 +352,7 @@ export class Game {
         radius,
         centerX,
         centerY,
+        shapeId,
       };
     }
 
@@ -330,6 +360,7 @@ export class Game {
       shape = {
         type: "pen",
         path: [...this.penPath],
+        shapeId,
       };
       this.penPath = [];
     }
@@ -340,12 +371,22 @@ export class Game {
     this.previewShape = null; // ✅ clear preview
     this.clearCanvas();
 
+    console.log(
+      "this is mouseuphandler",
+      JSON.stringify({
+        type: "chat",
+        message: JSON.stringify({ shape, senderId: this.clientId }),
+        roomId: this.roomId,
+        shapeId: shapeId,
+      })
+    );
+
     this.socket.send(
       JSON.stringify({
         type: "chat",
         message: JSON.stringify({ shape, senderId: this.clientId }),
         roomId: this.roomId,
-        shapeId: crypto.randomUUID(),
+        shapeId: shapeId,
       })
     );
   };

@@ -165,7 +165,9 @@ async function getExistingShape(roomId: string) {
 
   const shapes = messages.map((x: { messages: string }) => {
     const messageData = JSON.parse(x.messages);
-    return messageData.shape;
+    const shape = messageData.shape;
+    shape.shapeId = JSON.parse(x.messages).shapeId;
+    return shape;
   });
 
   return shapes;

@@ -80,9 +80,7 @@ wss.on("connection", function connection(ws, request) {
     }
 
     if (parsedData.type === "chat") {
-      const roomId = parsedData?.roomId;
-      const message = parsedData?.message || "";
-      const shapeId = parsedData?.shapeId || null;
+      const { roomId, message, shapeId } = parsedData;
 
       // NOT A GOOD WAY
       await prismaClient.chat.create({
@@ -99,7 +97,7 @@ wss.on("connection", function connection(ws, request) {
           user.ws.send(
             JSON.stringify({
               type: "chat",
-              message: message,
+              message,
               roomId,
               shapeId,
             })
@@ -114,11 +112,11 @@ wss.on("connection", function connection(ws, request) {
       await prismaClient.chat.deleteMany({
         where: {
           roomId: Number(roomId),
-          shapeId: parsedData.shapeId,
+          shapeId: shapeId,
         },
       });
 
-      // Broadcast erase to others
+      // brodcast erase to others
       users.forEach((user) => {
         if (user.rooms.includes(roomId)) {
           user.ws.send(

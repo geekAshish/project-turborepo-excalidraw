@@ -86,35 +86,50 @@ app.post(
 );
 
 app.post("/signin", async (req: Request, res: Response) => {
-  const parsedData = SignInSchema.safeParse(req.body);
-  if (!parsedData) {
-    res.json({
-      msg: "incorrent",
+  try {
+    const parsed = SignInSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid input" });
+      return;
+    }
+
+    const { email, password } = parsed.data;
+
+    const user = await prismaClient.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({
+      message: "User created successfully",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
     });
     return;
-  }
-
-  // TODO: compare the hashed pws here
-  const user = await prismaClient.user.findFirst({
-    where: {
-      email: parsedData.data?.email,
-      password: parsedData.data?.password,
-    },
-  });
-
-  if (!user) {
-    res.status(403).json({
-      msg: "Not authorized",
-    });
+  } catch (err) {
+    console.error("Signin error:", err);
+    res.status(500).json({ error: "Internal server error" });
     return;
   }
-
-  const token = jwt.sign({ userId: user?.id }, JWT_SECRET);
-
-  // db call
-  res.json({
-    token,
-  });
 });
 
 app.post("/room", auth, async (req: Request, res: Response) => {

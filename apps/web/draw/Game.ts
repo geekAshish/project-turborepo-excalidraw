@@ -50,6 +50,10 @@ export class Game {
 
   private isMouseClicked: boolean;
 
+  private draggedShapeIndex: number | null;
+  private offsetX: number;
+  private offsetY: number;
+
   constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
@@ -64,6 +68,10 @@ export class Game {
     this.selectedShape = "rect";
     this.penPath = [];
     this.clientId = crypto.randomUUID();
+
+    this.draggedShapeIndex = null;
+    this.offsetX = 0;
+    this.offsetY = 0;
 
     this.init();
     this.initHandlers();
@@ -160,6 +168,34 @@ export class Game {
     }
 
     this.ctx.closePath();
+  }
+
+  hitTest(x: number, y: number) {
+    for (let i = this.existingShapes.length - 1; i >= 0; i--) {
+      const shape = this.existingShapes[i];
+      if (!shape) return;
+
+      if (shape.type === "Rect") {
+        if (
+          x >= shape.x &&
+          x <= shape.x + shape.width &&
+          y >= shape.y &&
+          y <= shape.y + shape.height
+        ) {
+          return { shape, index: i };
+        }
+      }
+
+      if (shape.type === "circle") {
+        const dx = x - shape.centerX;
+        const dy = y - shape.centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= shape.radius) {
+          return { shape, index: i };
+        }
+      }
+    }
+    return null;
   }
 
   undo() {
@@ -304,11 +340,32 @@ export class Game {
 
   mouseDownHandler = (e: MouseEvent) => {
     this.isMouseClicked = true;
-    this.startX = e.clientX;
-    this.startY = e.clientY;
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (this.selectedShape === "move") {
+      const hit = this.hitTest(x, y);
+      if (hit) {
+        this.draggedShapeIndex = hit.index;
+
+        if (hit.shape.type === "Rect") {
+          this.offsetX = x - hit.shape.x;
+          this.offsetY = y - hit.shape.y;
+        }
+
+        if (hit.shape.type === "circle") {
+          this.offsetX = x - hit.shape.centerX;
+          this.offsetY = y - hit.shape.centerY;
+        }
+      }
+      return;
+    }
+
+    this.startX = x;
+    this.startY = y;
 
     if (this.selectedShape === "pen") {
-      this.penPath = [{ x: e.clientX, y: e.clientY }];
+      this.penPath = [{ x, y }];
     }
   };
 
@@ -317,21 +374,38 @@ export class Game {
 
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-    const shapeId = crypto.randomUUID();
+
+    if (this.selectedShape === "move" && this.draggedShapeIndex !== null) {
+      const movedShape = this.existingShapes[this.draggedShapeIndex];
+      this.draggedShapeIndex = null;
+      if (!movedShape) return;
+
+      this.socket.send(
+        JSON.stringify({
+          type: "move",
+          message: JSON.stringify({
+            shape: movedShape,
+            senderId: this.clientId,
+          }),
+          roomId: this.roomId,
+          shapeId: movedShape.shapeId,
+        })
+      );
+
+      return;
+    }
 
     if (this.selectedShape === "eraser") {
       this.eraseAtPoint(mouseX, mouseY);
       return;
     }
 
-    let shape: Shape | null = null;
-
+    const shapeId = crypto.randomUUID();
     const width = mouseX - this.startX;
     const height = mouseY - this.startY;
+    let shape: Shape | null = null;
 
-    const selectedShape = this.selectedShape;
-
-    if (selectedShape === "rect") {
+    if (this.selectedShape === "rect") {
       shape = {
         type: "Rect",
         x: this.startX,
@@ -342,7 +416,7 @@ export class Game {
       };
     }
 
-    if (selectedShape === "circle") {
+    if (this.selectedShape === "circle") {
       const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
       const centerX = this.startX + width / 2;
       const centerY = this.startY + height / 2;
@@ -356,7 +430,7 @@ export class Game {
       };
     }
 
-    if (selectedShape === "pen" && this.penPath.length > 0) {
+    if (this.selectedShape === "pen" && this.penPath.length > 0) {
       shape = {
         type: "pen",
         path: [...this.penPath],
@@ -368,18 +442,8 @@ export class Game {
     if (!shape) return;
 
     this.existingShapes.push(shape);
-    this.previewShape = null; // ✅ clear preview
+    this.previewShape = null;
     this.clearCanvas();
-
-    console.log(
-      "this is mouseuphandler",
-      JSON.stringify({
-        type: "chat",
-        message: JSON.stringify({ shape, senderId: this.clientId }),
-        roomId: this.roomId,
-        shapeId: shapeId,
-      })
-    );
 
     this.socket.send(
       JSON.stringify({
@@ -396,9 +460,28 @@ export class Game {
 
     const mouseX = e.clientX;
     const mouseY = e.clientY;
+
+    if (this.selectedShape === "move" && this.draggedShapeIndex !== null) {
+      const shape = this.existingShapes[this.draggedShapeIndex];
+
+      if (!shape) return;
+
+      if (shape.type === "Rect") {
+        shape.x = mouseX - this.offsetX;
+        shape.y = mouseY - this.offsetY;
+      }
+
+      if (shape.type === "circle") {
+        shape.centerX = mouseX - this.offsetX;
+        shape.centerY = mouseY - this.offsetY;
+      }
+
+      this.clearCanvas();
+      return;
+    }
+
     const width = mouseX - this.startX;
     const height = mouseY - this.startY;
-
     this.previewShape = null;
 
     if (this.selectedShape === "rect") {
@@ -425,14 +508,14 @@ export class Game {
     }
 
     if (this.selectedShape === "pen") {
-      this.penPath.push({ x: e.clientX, y: e.clientY });
+      this.penPath.push({ x: mouseX, y: mouseY });
       this.previewShape = {
         type: "pen",
         path: [...this.penPath],
       };
     }
 
-    this.clearCanvas(); // Redraw everything including preview
+    this.clearCanvas();
   };
 
   initMouseHandlers() {

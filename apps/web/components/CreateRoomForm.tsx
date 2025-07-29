@@ -43,8 +43,6 @@ export default function CreateRoomForm() {
           }
         );
 
-        console.log(res);
-
         if (res.data.roomId) {
           setMessage({
             type: "success",
@@ -52,7 +50,7 @@ export default function CreateRoomForm() {
           });
 
           setInterval(() => {
-            router.push(`room/${res.data.roomId}`);
+            router.push(`/room/${res.data.roomId}`);
           }, 500);
         } else {
           setMessage({

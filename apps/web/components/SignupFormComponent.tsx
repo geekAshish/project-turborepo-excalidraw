@@ -44,15 +44,16 @@ export default function SignupFormComponent() {
     startTransition(async () => {
       const res = await signupAction({
         ...rest,
-        // photo: photo?.[0], // Send single file
+        // TODO: working on profile, Send single file
+        // photo: photo?.[0],
       });
 
       if (!res.success) {
         setError("root", { type: "manual", message: res.error.error });
       } else {
         toast.success("Signed up successfully!");
-        reset(); // reset form
-        console.log(res);
+        // reset form
+        reset();
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userinfo", res.data.user);
 
@@ -68,7 +69,7 @@ export default function SignupFormComponent() {
     >
       <FileInput
         register={register("photo")}
-        error={errors.photo?.message as string}
+        error={errors.photo?.message?.toString()}
         watchFile={photo}
       />
 

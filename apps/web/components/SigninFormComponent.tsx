@@ -37,7 +37,10 @@ export default function SigninFormComponent() {
       } else {
         toast.success("Signed up successfully!");
         reset(); // reset form
-        router.push("/dashboard"); // redirect on success
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userinfo", res.data.user);
+
+        router.push("/room"); // redirect on success
       }
     });
   };

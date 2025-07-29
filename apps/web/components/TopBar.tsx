@@ -1,6 +1,12 @@
 import { Tool } from "../modules/interface/shape";
 import { IconButton } from "./IconButton";
-import { Circle, Eraser, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import {
+  Circle,
+  Eraser,
+  Move,
+  Pencil,
+  RectangleHorizontalIcon,
+} from "lucide-react";
 
 function Topbar({
   selectedTool,
@@ -18,6 +24,13 @@ function Topbar({
       }}
     >
       <div className="flex gap-t">
+        <IconButton
+          onClick={() => {
+            setSelectedTool("move");
+          }}
+          activated={selectedTool === "move"}
+          icon={<Move />}
+        />
         <IconButton
           onClick={() => {
             setSelectedTool("pen");

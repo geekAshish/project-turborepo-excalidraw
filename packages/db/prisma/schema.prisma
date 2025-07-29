@@ -32,7 +32,7 @@ model Chat {
   roomId Int
   message String
   userId String
-  shapeId String?
+  shapeId String? @unique
   room Room @relation(fields: [roomId], references: [id])
   user User @relation(fields: [userId], references: [id])
 }

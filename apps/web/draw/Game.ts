@@ -127,6 +127,18 @@ export class Game {
         );
         this.clearCanvas();
       }
+
+      if (message.type === "move") {
+        const { shape, shapeId } = message;
+        const index = this.existingShapes.findIndex(
+          (s) => s.shapeId === shapeId
+        );
+
+        if (index !== -1) {
+          this.existingShapes[index] = shape;
+          this.clearCanvas();
+        }
+      }
     };
   }
 
@@ -147,6 +159,8 @@ export class Game {
   drawShape(shape: Shape) {
     this.ctx.beginPath();
     this.ctx.strokeStyle = "rgba(225, 225, 225)";
+
+    console.log("this is shape type: ", shape.type);
 
     if (shape.type === "Rect") {
       this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);

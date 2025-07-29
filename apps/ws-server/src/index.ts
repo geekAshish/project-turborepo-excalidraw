@@ -129,5 +129,31 @@ wss.on("connection", function connection(ws, request) {
         }
       });
     }
+
+    if (parsedData.type === "move") {
+      const { shape, shapeId, roomId, senderId } = parsedData;
+
+      await prismaClient.chat.update({
+        where: { shapeId },
+        data: {
+          message: JSON.stringify({
+            shape,
+            senderId: senderId,
+          }),
+        },
+      });
+
+      users.forEach((user) => {
+        if (user.rooms.includes(roomId) && user.userId !== senderId) {
+          user.ws.send(
+            JSON.stringify({
+              type: "move",
+              shape,
+              shapeId,
+            })
+          );
+        }
+      });
+    }
   });
 });

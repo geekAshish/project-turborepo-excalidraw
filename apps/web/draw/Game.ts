@@ -7,7 +7,7 @@ interface Reactangle {
   y: number;
   width: number;
   height: number;
-  shapeId: string;
+  shapeId?: string;
 }
 
 interface Circle {
@@ -15,7 +15,7 @@ interface Circle {
   centerX: number;
   centerY: number;
   radius: number;
-  shapeId: string;
+  shapeId?: string;
 }
 
 interface Path {
@@ -26,7 +26,7 @@ interface Path {
 interface Pen {
   type: "pen";
   path: Path[];
-  shapeId: string;
+  shapeId?: string;
 }
 
 type Shape = Reactangle | Circle | Pen;
@@ -302,7 +302,7 @@ export class Game {
     return dist <= threshold;
   }
 
-  mouseDownHandler = (e) => {
+  mouseDownHandler = (e: MouseEvent) => {
     this.isMouseClicked = true;
     this.startX = e.clientX;
     this.startY = e.clientY;
@@ -312,7 +312,7 @@ export class Game {
     }
   };
 
-  mouseUpHandler = (e) => {
+  mouseUpHandler = (e: MouseEvent) => {
     this.isMouseClicked = false;
 
     const mouseX = e.clientX;
@@ -391,7 +391,7 @@ export class Game {
     );
   };
 
-  mouseMoveHandler = (e) => {
+  mouseMoveHandler = (e: MouseEvent) => {
     if (!this.isMouseClicked) return;
 
     const mouseX = e.clientX;

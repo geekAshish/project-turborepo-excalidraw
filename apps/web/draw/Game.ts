@@ -343,6 +343,7 @@ export class Game {
     const x = e.clientX;
     const y = e.clientY;
 
+    // TODO
     if (this.selectedShape === "move") {
       const hit = this.hitTest(x, y);
       if (hit) {
@@ -375,6 +376,7 @@ export class Game {
     const mouseX = e.clientX;
     const mouseY = e.clientY;
 
+    // TODO
     if (this.selectedShape === "move" && this.draggedShapeIndex !== null) {
       const movedShape = this.existingShapes[this.draggedShapeIndex];
       this.draggedShapeIndex = null;
@@ -461,6 +463,7 @@ export class Game {
     const mouseX = e.clientX;
     const mouseY = e.clientY;
 
+    // TODO
     if (this.selectedShape === "move" && this.draggedShapeIndex !== null) {
       const shape = this.existingShapes[this.draggedShapeIndex];
 

@@ -101,6 +101,7 @@ export class Game {
       const message = JSON.parse(event.data);
 
       if (message.type === "chat") {
+        console.log(message.message);
         const { shape, senderId } = JSON.parse(message.message);
 
         // Ignore shapes sent by this same client
@@ -344,6 +345,7 @@ export class Game {
         type: "chat",
         message: JSON.stringify({ shape, senderId: this.clientId }),
         roomId: this.roomId,
+        shapeId: crypto.randomUUID(),
       })
     );
   };

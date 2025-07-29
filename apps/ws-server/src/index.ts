@@ -65,8 +65,6 @@ wss.on("connection", function connection(ws, request) {
       parsedData = JSON.parse(data);
     }
 
-    console.log(parsedData.type);
-
     if (parsedData.type === "join_room") {
       // TODO: check if roomid exist, in db
       // TODO: check if user has access of this room
@@ -76,15 +74,15 @@ wss.on("connection", function connection(ws, request) {
 
     if (parsedData.type === "leave_room") {
       const user = users.find((x) => x.ws === ws);
-      if (!user) {
-        return;
-      }
+      if (!user) return;
+
       user.rooms = user?.rooms.filter((x) => x === parsedData.room);
     }
 
     if (parsedData.type === "chat") {
       const roomId = parsedData?.roomId;
       const message = parsedData?.message || "";
+      const shapeId = parsedData?.shapeId || null;
 
       // NOT A GOOD WAY
       await prismaClient.chat.create({
@@ -92,6 +90,7 @@ wss.on("connection", function connection(ws, request) {
           roomId: Number(roomId),
           message,
           userId,
+          shapeId,
         },
       });
 
@@ -101,6 +100,31 @@ wss.on("connection", function connection(ws, request) {
             JSON.stringify({
               type: "chat",
               message: message,
+              roomId,
+              shapeId,
+            })
+          );
+        }
+      });
+    }
+
+    if (parsedData.type === "erase") {
+      const { shapeId, roomId } = parsedData;
+
+      await prismaClient.chat.deleteMany({
+        where: {
+          roomId: Number(roomId),
+          shapeId: parsedData.shapeId,
+        },
+      });
+
+      // Broadcast erase to others
+      users.forEach((user) => {
+        if (user.rooms.includes(roomId)) {
+          user.ws.send(
+            JSON.stringify({
+              type: "erase",
+              shapeId,
               roomId,
             })
           );
